@@ -92,7 +92,7 @@ func generateRefrashTokenPair(user models.User, timeAccess int64, claims jwt.Map
 	token := map[string]string{}
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
 		"exp":  timeAccess,
-		"name": user.Name,
+		"name": user.GUID,
 		"id":   user.ID,
 	})
 

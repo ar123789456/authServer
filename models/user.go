@@ -34,15 +34,13 @@ func init() {
 
 //User модель для mongo
 type User struct {
-	ID       primitive.ObjectID `bson:"_id"`
-	Name     string             `bson:"name"`
-	Password string             `bson:"password"`
-	Refresh  string             `bson:"refresh"`
+	ID      primitive.ObjectID `bson:"_id"`
+	GUID    string             `bson:"guid"`
+	Refresh string             `bson:"refresh"`
 }
 
 type UserInfo struct {
-	Name     string `json:"name"`
-	Password string `json:"password"`
+	GUID string `json:"guid"`
 }
 
 func (user *User) Create() error {
@@ -50,8 +48,8 @@ func (user *User) Create() error {
 	return err
 }
 
-func (user *User) Get() error {
-	filter := bson.D{primitive.E{Key: "name", Value: user.Name}, primitive.E{Key: "_id", Value: user.ID}}
+func (user *User) Get(GUID string) error {
+	filter := bson.D{primitive.E{Key: "guid", Value: GUID}, primitive.E{Key: "_id", Value: user.ID}}
 	tmp := collection.FindOne(ctx, filter)
 	return tmp.Decode(&user)
 }
@@ -73,10 +71,10 @@ func (user *User) UpdateAddNewToken(refrash string) error {
 	return err
 }
 
-func (user *User) Update(outdatedR, refrash string) error {
-	filter := bson.D{primitive.E{Key: "refresh", Value: outdatedR}}
+// func (user *User) Update(outdatedR, refrash string) error {
+// 	filter := bson.D{primitive.E{Key: "refresh", Value: outdatedR}}
 
-	update := bson.D{primitive.E{Key: "refrash", Value: refrash}}
+// 	update := bson.D{primitive.E{Key: "refrash", Value: refrash}}
 
-	return collection.FindOneAndUpdate(ctx, filter, update).Decode(&user)
-}
+// 	return collection.FindOneAndUpdate(ctx, filter, update).Decode(&user)
+// }

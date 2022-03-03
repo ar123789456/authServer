@@ -29,10 +29,9 @@ func Access(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	//Ищем юзера и аудентифицируем
-	user.Name = userinfo.Name
-	err = user.Get()
-	if err != nil || CheckPasswordHash(userinfo.Password, user.Password) {
+	//Ищем юзера
+	err = user.Get(userinfo.GUID)
+	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -70,7 +69,7 @@ func generateTokenPair(user models.User, timeAccess, timeRefrash int64) (map[str
 	token := map[string]string{}
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
 		"exp":  timeAccess,
-		"name": user.Name,
+		"guid": user.GUID,
 		"id":   user.ID,
 	})
 
