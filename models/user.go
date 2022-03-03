@@ -1,10 +1,10 @@
 package models
 
 import (
+	"auth/info"
 	"context"
 	"log"
 
-	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,7 +20,7 @@ const (
 )
 
 func init() {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017/")
+	clientOptions := options.Client().ApplyURI(info.Mongo)
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatal(err)
@@ -32,6 +32,7 @@ func init() {
 	collection = client.Database(db).Collection(user)
 }
 
+//User модель для mongo
 type User struct {
 	ID       primitive.ObjectID `bson:"_id"`
 	Name     string             `bson:"name"`
@@ -42,7 +43,6 @@ type User struct {
 type UserInfo struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
-	jwt.StandardClaims
 }
 
 func (user *User) Create() error {
@@ -50,18 +50,27 @@ func (user *User) Create() error {
 	return err
 }
 
-func (user *User) Get(name string) error {
-	filter := bson.D{primitive.E{Key: "name", Value: name}}
+func (user *User) Get() error {
+	filter := bson.D{primitive.E{Key: "name", Value: user.Name}, primitive.E{Key: "_id", Value: user.ID}}
+	tmp := collection.FindOne(ctx, filter)
+	return tmp.Decode(&user)
+}
+
+func (user *User) GetByRefrashToken(token string) error {
+	filter := bson.D{primitive.E{Key: "refrash", Value: token}}
 	tmp := collection.FindOne(ctx, filter)
 	return tmp.Decode(&user)
 }
 
 func (user *User) UpdateAddNewToken(refrash string) error {
-	filter := bson.D{primitive.E{Key: "_id", Value: user.ID}}
-
-	update := bson.D{primitive.E{Key: "refrash", Value: refrash}}
-
-	return collection.FindOneAndUpdate(ctx, filter, update).Decode(&user)
+	_, err := collection.UpdateOne(
+		ctx,
+		bson.M{"_id": user.ID},
+		bson.D{
+			{"$set", bson.D{{"refrash", refrash}}},
+		},
+	)
+	return err
 }
 
 func (user *User) Update(outdatedR, refrash string) error {

@@ -16,4 +16,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// var us models.UserInfo
+	// var user models.User
+	// user.Name = "qaz"
+	// user.Password = "123"
+	// fmt.Println(user.Create())
+	// us.Name = "qaz"
+	// us.Password = "123"
+	// a, _ := json.Marshal(us)
+	// fmt.Println(string(a))
 }
